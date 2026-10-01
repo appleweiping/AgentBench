@@ -80,6 +80,25 @@ class DBBenchSelectResultTest(unittest.TestCase):
         self.assertGreater(select_count, 1000)
         self.assertGreater(parsed_rows, 900)
 
+    def test_quoted_list_items_keep_previous_matching_behavior(self):
+        data_dir = Path(__file__).resolve().parents[1] / "data" / "dbbench"
+        checked = 0
+        with patch("builtins.print"):
+            for name in ("standard.jsonl", "dev.jsonl"):
+                with (data_dir / name).open(encoding="utf-8") as stream:
+                    for line_number, line in enumerate(stream, 1):
+                        entry = json.loads(line)
+                        if entry["type"][0] in ("INSERT", "DELETE", "UPDATE"):
+                            continue
+                        gold = entry["label"]
+                        quoted_answer = [f"'{item}'" for item in gold]
+                        self.assertTrue(
+                            self.compare(quoted_answer, gold),
+                            f"{name}:{line_number}",
+                        )
+                        checked += 1
+        self.assertEqual(checked, 120)
+
 
 if __name__ == "__main__":
     unittest.main()

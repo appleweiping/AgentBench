@@ -240,7 +240,10 @@ class DBResultProcessor:
                                 continue
                         except (SyntaxError, ValueError, TypeError, RecursionError, InvalidOperation):
                             pass
-                result.append(DBResultProcessor._normalize_special_values(item))
+                # Keep the existing tolerance for answers such as ["'value'"].
+                result.append(DBResultProcessor._normalize_special_values(
+                    str(item).strip().strip("'\"")
+                ))
             return result
         else:
             return [DBResultProcessor._normalize_special_values(str(answer).strip().strip("'\""))]
