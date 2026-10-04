@@ -44,7 +44,16 @@ def save_sample_manifest(directory, indices):
     path = directory / MANIFEST
     value = {"schema_version": 1, "expected_ids": indices}
     if path.exists():
-        existing = json.loads(path.read_text(encoding="utf-8"))
+        existing = json.loads(
+            path.read_text(encoding="utf-8"), parse_constant=reject_constant
+        )
+        if (
+            not isinstance(existing, dict)
+            or type(existing.get("schema_version")) is not int
+            or existing["schema_version"] != 1
+        ):
+            raise ValueError(f"Invalid manifest at {path}")
+        validate_indices(existing.get("expected_ids"))
         if existing != value:
             raise ValueError(
                 f"Task indices changed since {path} was created; use a new output directory"

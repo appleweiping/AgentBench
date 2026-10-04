@@ -158,6 +158,9 @@ class CoverageTest(unittest.TestCase):
             save_sample_manifest(self.task, [1])
         with self.assertRaises(ValueError):
             save_sample_manifest(self.task, [0, 0])
+        (self.task / MANIFEST).write_text('{"schema_version":1,"expected_ids":[false]}')
+        with self.assertRaises(ValueError):
+            save_sample_manifest(self.task, [0])
 
     def test_public_cli_writes_sidecar_and_protects_sources(self):
         save_sample_manifest(self.task, [0, 1])
